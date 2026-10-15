@@ -6,13 +6,29 @@ import numpy as np
 from telegram import Bot
 import asyncio
 import logging
+from threading import Thread
+from flask import Flask
 
+# Flask server (Render uxlatib qo'ymasligi uchun)
+app_web = Flask('')
+
+@app_web.route('/')
+def home():
+    return "Bot is running 24/7!"
+
+def run_web():
+    app_web.run(host='0.0.0.0', port=int(os.environ.get("PORT", 8080)))
+
+def keep_alive():
+    t = Thread(target=run_web)
+    t.start()
+
+# Logging
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 
-# Render muhitidan o'zgaruvchilarni olish
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
 SYMBOL = "BTCUSDT"
@@ -82,4 +98,7 @@ async def main():
             await asyncio.sleep(30)
 
 if __name__ == "__main__":
+    # Veb serverni alohida oqimda (thread) yoqamiz
+    keep_alive()
+    # Asosiy bot siklini ishga tushiramiz
     asyncio.run(main())
